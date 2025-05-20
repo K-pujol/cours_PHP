@@ -35,13 +35,8 @@ $image = "https://www.patisserie-et-gourmandise.com/wp-content/uploads/2018/04/r
         <p>Remise : <?php echo $fruits["discount"] ?> %</p>
         <img src="<?php echo $fruits["picture_url"] ?>" alt="Image d'une tarte aux fraises" width="300">
         <p>Prix après remise : <?php echo $fruits["price"] * (1 - $fruits["discount"] / 100) ?> €</p>
-
-
     </div>
 </body>
 
 </html>
-
-
-
 <?php include('footer.php'); ?>

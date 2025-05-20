@@ -42,7 +42,6 @@ $descriptionPage = "Page présentation d'une tarte au fraise";
 $nom = "Tarte au fraise";
 include('header.php');
 
-
 $prix = "3";
 $image = "https://www.patisserie-et-gourmandise.com/wp-content/uploads/2018/04/recette-tarte-fraise.jpg";
 ?>
@@ -75,7 +74,4 @@ $image = "https://www.patisserie-et-gourmandise.com/wp-content/uploads/2018/04/r
 </body>
 
 </html>
-
-
-
 <?php include('footer.php'); ?>

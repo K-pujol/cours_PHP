@@ -35,7 +35,4 @@ $image = "https://www.patisserie-et-gourmandise.com/wp-content/uploads/2018/04/r
 </body>
 
 </html>
-
-
-
 <?php include('footer.php'); ?>
