@@ -60,15 +60,12 @@ $image = "https://www.patisserie-et-gourmandise.com/wp-content/uploads/2018/04/r
     <div class="bg-dark text-white p-3">
         <?php foreach ($tartes as $tarte) : ?>
             <h2 class="text-center">Tarte aux <?php echo $tarte["name"] ?></h2>
-
-
             <h3>Tarte aux <?php echo $tarte["name"] ?></h3>
             <p>Prix : <?php echo $tarte["price"] ?> €</p>
             <p>Poids : <?php echo $tarte["weight"] ?> g</p>
             <p>Remise : <?php echo $tarte["discount"] ?> %</p>
             <img src="<?php echo $tarte["picture_url"] ?>" alt="Image d'une tarte aux fraises" width="300">
             <p>Prix après remise : <?php echo $tarte["price"] * (1 - $tarte["discount"] / 100) ?> €</p>
-
         <?php endforeach; ?>
     </div>
 </body>
