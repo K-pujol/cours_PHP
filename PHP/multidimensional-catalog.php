@@ -69,9 +69,9 @@ $image = "https://www.patisserie-et-gourmandise.com/wp-content/uploads/2018/04/r
             <p>Poids : <?php echo $tarte["weight"] ?> g</p>
             <p>Remise : <?php echo $tarte["discount"] ?> %</p>
             <img src="<?php echo $tarte["picture_url"] ?>" alt="Image d'une tarte aux fraises" width="300">
-            <p> Prix HT : <?php echo calculerPrixHT(formatPrice($tarte["price"])) ?> €</p>
+            <p>Prix HT : <?php echo priceExcludingVAT(formatPrice($tarte["price"])) ?> €</p>
             <p>Prix TTC : <?php echo formatPrice($tarte["price"]) ?></p>
-            <p>Prix après remise : <?php echo formatPrice(($tarte["price"]) * (1 - $tarte["discount"] / 100)) ?></p>
+            <p>Prix après remise : <?php echo discountedPrice($tarte["price"], $tarte["discount"]) ?></p>
         <?php endforeach; ?>
     </div>
 </body>
