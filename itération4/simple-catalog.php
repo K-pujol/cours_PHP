@@ -17,9 +17,9 @@ $image = "https://www.patisserie-et-gourmandise.com/wp-content/uploads/2018/04/r
 </head>
 <body>
     <header class="bg-dark text-white p-3">
-        <?php foreach ($fruits as $fruit) : ?>
-            <h2 class="text-center">Tarte au <?php echo $fruit ?></h2>
-        <?php endforeach; ?>
+        <?php for ($i = 0; $i < count($fruits); $i++) { ?>
+            <h2 class="text-center">Tarte au <?php echo $fruits[$i] ?></h2>
+        <?php } ?>
 
         <?php sort($fruits); ?>
         <p><?php echo "1er fruit en ordre croissant: " . $fruits[0] ?></p>
