@@ -1,6 +1,6 @@
 <?php
 
-include('../my_function.php');
+include('my_function.php');
 
 
 $tartes = [
