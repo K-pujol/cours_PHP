@@ -1,39 +1,39 @@
 <?php
 
-include('my_function.php');
+include('my-function.php');
 
 
 $tartes = [
     "fraise" => [
-        "name" => "Fraise",
+        "name" => "Fraises",
         "price" => 1500,
         "weight" => 1000,
         "discount" => 10,
         "picture_url" => "https://www.patisserie-et-gourmandise.com/wp-content/uploads/2018/04/recette-tarte-fraise.jpg",
     ],
     "pomme" => [
-        "name" => "Pomme",
+        "name" => "Pommes",
         "price" => 1000,
         "weight" => 800,
         "discount" => 5,
         "picture_url" => "https://i1.wp.com/www.la-gourmandise-avant-tout.com/wp-content/uploads/2020/11/tarte-aux-pomems-Cedric-Grolet-scaled.jpg?resize=1020%2C600&ssl=1",
     ],
     "poire" => [
-        "name" => "Poire",
+        "name" => "Poires",
         "price" => 1200,
         "weight" => 900,
         "discount" => 8,
         "picture_url" => "https://fac.img.pmdstatic.net/fit/~1~fac~2022~06~27~97207b60-4031-4be3-9cbb-b3f765aeef1e.jpeg/750x562/quality/80/crop-from/center/cr/wqkgSVNUT0NLL0dFVFRZIElNQUdFUyAvIEZlbW1lIEFjdHVlbGxl/tarte-aux-poires-normande.jpeg",
     ],
     "cerise" => [
-        "name" => "Cerise",
+        "name" => "Cerises",
         "price" => 1600,
         "weight" => 1100,
         "discount" => 12,
         "picture_url" => "https://img.static-rmg.be/a/food/image/q75/w640/h400/1092579/tarte-aux-cerises.jpg",
     ],
     "abricot" => [
-        "name" => "Abricot",
+        "name" => "Abricots",
         "price" => 1400,
         "weight" => 950,
         "discount" => 7,
@@ -41,9 +41,9 @@ $tartes = [
     ],
 ];
 
-$titrePage = "Tarte au $tartes[0]";
-$descriptionPage = "Page présentation d'une tarte au fraise";
-$nom = "Tarte au fraise";
+$titrePage = "Tarte aux $tartes[0]";
+$descriptionPage = "Page présentation d'une tarte aux $tartes[0]";
+$nom = "Tarte aux $tartes[0]";
 include('header.php');
 
 $prix = "3";
@@ -69,12 +69,23 @@ $image = "https://www.patisserie-et-gourmandise.com/wp-content/uploads/2018/04/r
             <p>Poids : <?php echo $tarte["weight"] ?> g</p>
             <p>Remise : <?php echo $tarte["discount"] ?> %</p>
             <img src="<?php echo $tarte["picture_url"] ?>" alt="Image d'une tarte aux fraises" width="300">
-            <p>Prix HT : <?php echo priceExcludingVAT(formatPrice($tarte["price"])) ?> €</p>
+            <p>Prix HT : <?php echo formatPrice(priceExcludingVAT($tarte["price"])) ?> €</p>
             <p>Prix TTC : <?php echo formatPrice($tarte["price"]) ?></p>
             <p>Prix après remise : <?php echo discountedPrice($tarte["price"], $tarte["discount"]) ?></p>
+
+            <form action="cart.php" method="post">
+                <input type="hidden" name="cart[<?php echo $tarte["name"] ?>][name]" value="<?php echo $tarte["name"] ?>">
+                <input type="hidden" name="cart[<?php echo $tarte["name"] ?>][price]" value="<?php echo $tarte["price"] ?>">
+                <input type="hidden" name="cart[<?php echo $tarte["name"] ?>][discount]" value="<?php echo $tarte["discount"] ?>">
+                <input type="hidden" name="cart[<?php echo $tarte["name"] ?>][weight]" value="<?php echo $tarte["weight"] ?>">
+                <input type="hidden" name="cart[<?php echo $tarte["name"] ?>][picture]" value="<?php echo $tarte["picture_url"] ?>">
+                <input type="number" name="quantite" value="1" min="1" max="10">
+                <button type="submit" class="btn btn-primary">Ajouter au panier</button>
+            </form>
+
         <?php endforeach; ?>
     </div>
+    <?php include('footer.php'); ?>
 </body>
 
 </html>
-<?php include('footer.php'); ?>

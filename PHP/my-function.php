@@ -6,12 +6,26 @@ function priceExcludingVAT(float $prix): float
     return $prix / $TVA;
 }
 
+/**
+ * Formate le prix en euros avec deux décimales et un espace comme séparateur de milliers.
+ *
+ * @param float $centimes Le prix en centimes.
+ * @return string Le prix formaté.
+ */
 
 function formatPrice(float $centimes): string
 {
     $prixEuro = $centimes / 100;
     return number_format($prixEuro, 2, ',', ' ') . " €";
 }
+
+/**
+ * Calcule le prix après application d'une remise.
+ *
+ * @param float $prix Le prix initial.
+ * @param float $remises Le pourcentage de remise à appliquer.
+ * @return string Le prix après remise formaté.
+ */
 
 function discountedPrice(float $prix, float $remises): string
 {

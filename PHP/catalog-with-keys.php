@@ -1,5 +1,5 @@
 <?php
-include('my_function.php');
+include('my-function.php');
 
 $fruits = [
     "name" => "Fraise",
