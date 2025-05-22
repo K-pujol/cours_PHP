@@ -1,5 +1,20 @@
 <?php
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 $cart = $_POST['cart'] ?? [];
+
+
+/** Affichage des tartes dans le panier */
+foreach ($cart as $nomTarte => $infos) {
+    $qty = (int) ($infos['quantite'] ?? 0);
+
+    if ($qty <= 0) {
+        unset($cart[$nomTarte]);
+    }
+}
 
 /** Suppression d'une tarte du panier */
 if (isset($_POST['action']) && $_POST['action'] === 'remove' && isset($_POST['remove'])) {
@@ -7,21 +22,25 @@ if (isset($_POST['action']) && $_POST['action'] === 'remove' && isset($_POST['re
 }
 /** Ajout d'une tarte au panier */
 if (isset($_POST['action']) && $_POST['action'] === 'add' && isset($_POST['name']) && isset($_POST['quantite'])) {
-    $name = htmlspecialchars($_POST['name']);
+    $name = $_POST['name'];
     $qty = (int) $_POST['quantite'];
 
     if (isset($cart[$name])) {
-        $cart[$name] += $qty;
+        $cart[$name]['quantite'] += $qty;
     } else {
-        $cart[$name] = $qty;
+        $cart[$name] = [
+            'name' => $name,
+            'quantite' => $qty
+        ];
     }
 }
 
+
 /** Incrémentation de la quantité d'une tarte */
-if (isset($_POST['action'], $_POST['name']) && $_POST['action'] === 'increment') {
+if ($_POST['action'] === 'increment' && isset($_POST['name'])) {
     $name = $_POST['name'];
     if (isset($cart[$name])) {
-        $cart[$name]++;
+        $cart[$name]['quantite']++;
     }
 }
 
@@ -29,8 +48,8 @@ if (isset($_POST['action'], $_POST['name']) && $_POST['action'] === 'increment')
 if (isset($_POST['action'], $_POST['name']) && $_POST['action'] === 'decrement') {
     $name = $_POST['name'];
     if (isset($cart[$name])) {
-        $cart[$name]--;
-        if ($cart[$name] <= 0) {
+        $cart[$name]['quantite']--;
+        if ($cart[$name]['quantite'] <= 0) {
             unset($cart[$name]);
         }
     }
@@ -48,7 +67,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'clear') {
 <head>
     <meta charset="UTF-8">
     <title>Mon panier</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body>
@@ -65,40 +84,52 @@ if (isset($_POST['action']) && $_POST['action'] === 'clear') {
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($cart as $name => $qty): ?>
+
+                    <!-- Affichage des tartes dans le panier -->
+                    <?php foreach ($cart as $name => $infos) :
+                        $quantite = $infos['quantite'] ?? 0;
+                    ?>
                         <tr>
                             <td><?php echo htmlspecialchars($name); ?></td>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
+                                    <!-- bouton moins -->
                                     <form method="post" class="d-inline">
                                         <input type="hidden" name="action" value="decrement">
                                         <input type="hidden" name="name" value="<?php echo htmlspecialchars($name); ?>">
-                                        <?php foreach ($cart as $key => $valeur): ?>
-                                            <input type="hidden" name="cart[<?php echo htmlspecialchars($key); ?>]" value="<?php echo $valeur; ?>">
+                                        <?php foreach ($cart as $key => $data): ?>
+                                            <input type="hidden" name="cart[<?php echo htmlspecialchars($key); ?>][name]" value="<?php echo htmlspecialchars($data['name']); ?>">
+                                            <input type="hidden" name="cart[<?php echo htmlspecialchars($key); ?>][quantite]" value="<?php echo (int) $data['quantite']; ?>">
                                         <?php endforeach; ?>
                                         <button class="btn btn-sm btn-outline-secondary">-</button>
                                     </form>
 
-                                    <span><?php echo $qty; ?></span>
+                                    <span><?php echo $quantite; ?></span>
 
-                                    <!-- Bouton + -->
+
+                                    <!-- Bouton plus -->
                                     <form method="post" class="d-inline">
                                         <input type="hidden" name="action" value="increment">
                                         <input type="hidden" name="name" value="<?php echo htmlspecialchars($name); ?>">
-                                        <?php foreach ($cart as $key => $valeur): ?>
-                                            <input type="hidden" name="cart[<?php echo htmlspecialchars($key); ?>]" value="<?php echo $valeur; ?>">
+                                        <?php foreach ($cart as $key => $data): ?>
+                                            <input type="hidden" name="cart[<?php echo htmlspecialchars($key); ?>][name]" value="<?php echo htmlspecialchars($data['name']); ?>">
+                                            <input type="hidden" name="cart[<?php echo htmlspecialchars($key); ?>][quantite]" value="<?php echo (int) $data['quantite']; ?>">
                                         <?php endforeach; ?>
+
                                         <button class="btn btn-sm btn-outline-secondary">+</button>
                                     </form>
+
                                 </div>
                             </td>
                             <td>
+                                <!-- Bouton supprimer -->
                                 <form method="post" class="d-inline">
                                     <input type="hidden" name="action" value="remove">
                                     <input type="hidden" name="name" value="<?php echo htmlspecialchars($name); ?>">
-                                    <?php foreach ($cart as $key => $valeur): ?>
+                                    <?php foreach ($cart as $key => $data): ?>
                                         <?php if ($key !== $name): ?>
-                                            <input type="hidden" name="cart[<?php echo htmlspecialchars($key); ?>]" value="<?php echo $valeur; ?>">
+                                            <input type="hidden" name="cart[<?php echo htmlspecialchars($key); ?>][name]" value="<?php echo htmlspecialchars($data['name']); ?>">
+                                            <input type="hidden" name="cart[<?php echo htmlspecialchars($key); ?>][quantite]" value="<?php echo (int) $data['quantite']; ?>">
                                         <?php endif; ?>
                                     <?php endforeach; ?>
                                     <button class="btn btn-sm btn-danger">Supprimer</button>
@@ -138,8 +169,10 @@ if (isset($_POST['action']) && $_POST['action'] === 'clear') {
                 <input type="number" name="quantite" class="form-control" value="1" min="1" required>
             </div>
 
-            <?php foreach ($cart as $name => $qty): ?>
-                <input type="hidden" name="cart[<?php echo htmlspecialchars($name); ?>]" value="<?php echo $qty; ?>">
+            <!-- Ajout d'un champ caché pour chaque tarte dans le panier -->
+            <?php foreach ($cart as $key => $data): ?>
+                <input type="hidden" name="cart[<?php echo htmlspecialchars($key); ?>][name]" value="<?php echo htmlspecialchars($data['name']); ?>">
+                <input type="hidden" name="cart[<?php echo htmlspecialchars($key); ?>][quantite]" value="<?php echo (int) $data['quantite']; ?>">
             <?php endforeach; ?>
 
             <div class="col-md-2">

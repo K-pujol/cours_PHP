@@ -62,28 +62,30 @@ $image = "https://www.patisserie-et-gourmandise.com/wp-content/uploads/2018/04/r
 
 <body>
     <div class="bg-dark text-white p-3">
-        <?php foreach ($tartes as $tarte) : ?>
-            <h2 class="text-center">Tarte aux <?php echo $tarte["name"] ?></h2>
-            <h3>Tarte aux <?php echo $tarte["name"] ?></h3>
-            <p>Prix : <?php echo formatPrice($tarte["price"]) ?></p>
-            <p>Poids : <?php echo $tarte["weight"] ?> g</p>
-            <p>Remise : <?php echo $tarte["discount"] ?> %</p>
-            <img src="<?php echo $tarte["picture_url"] ?>" alt="Image d'une tarte aux fraises" width="300">
-            <p>Prix HT : <?php echo formatPrice(priceExcludingVAT($tarte["price"])) ?> €</p>
-            <p>Prix TTC : <?php echo formatPrice($tarte["price"]) ?></p>
-            <p>Prix après remise : <?php echo discountedPrice($tarte["price"], $tarte["discount"]) ?></p>
 
-            <form action="cart.php" method="post">
+        <form action="cart.php" method="post">
+            <button type="submit" class="btn btn-primary">Ajouter au panier</button>
+            <?php foreach ($tartes as $tarte) : ?>
+                <h2 class="text-center">Tarte aux <?php echo $tarte["name"] ?></h2>
+                <h3>Tarte aux <?php echo $tarte["name"] ?></h3>
+                <p>Prix : <?php echo formatPrice($tarte["price"]) ?></p>
+                <p>Poids : <?php echo $tarte["weight"] ?> g</p>
+                <p>Remise : <?php echo $tarte["discount"] ?> %</p>
+                <img src="<?php echo $tarte["picture_url"] ?>" alt="Image d'une tarte aux fraises" width="300">
+                <p>Prix HT : <?php echo formatPrice(priceExcludingVAT($tarte["price"])) ?> €</p>
+                <p>Prix TTC : <?php echo formatPrice($tarte["price"]) ?></p>
+                <p>Prix après remise : <?php echo discountedPrice($tarte["price"], $tarte["discount"]) ?></p>
+
+
                 <input type="hidden" name="cart[<?php echo $tarte["name"] ?>][name]" value="<?php echo $tarte["name"] ?>">
-                <input type="hidden" name="cart[<?php echo $tarte["name"] ?>][price]" value="<?php echo $tarte["price"] ?>">
+                <!--   <input type="hidden" name="cart[<?php echo $tarte["name"] ?>][price]" value="<?php echo $tarte["price"] ?>">
                 <input type="hidden" name="cart[<?php echo $tarte["name"] ?>][discount]" value="<?php echo $tarte["discount"] ?>">
                 <input type="hidden" name="cart[<?php echo $tarte["name"] ?>][weight]" value="<?php echo $tarte["weight"] ?>">
-                <input type="hidden" name="cart[<?php echo $tarte["name"] ?>][picture]" value="<?php echo $tarte["picture_url"] ?>">
-                <input type="number" name="quantite" value="1" min="1" max="10">
-                <button type="submit" class="btn btn-primary">Ajouter au panier</button>
-            </form>
+                <input type="hidden" name="cart[<?php echo $tarte["name"] ?>][picture]" value="<?php echo $tarte["picture_url"] ?>"> -->
+                <input type="number" name="cart[<?php echo $tarte["name"] ?>][quantite]" value="0" min="0" max="10">
+            <?php endforeach; ?>
 
-        <?php endforeach; ?>
+        </form>
     </div>
     <?php include('footer.php'); ?>
 </body>
