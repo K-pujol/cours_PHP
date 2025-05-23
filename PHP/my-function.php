@@ -33,7 +33,8 @@ function discountedPrice(float $prix, float $remises): string
     return formatPrice((int) $prix);
 }
 
-function activerDebug(): void {
+function activerDebug(): void
+{
     ini_set('display_errors', '1');
     ini_set('display_startup_errors', '1');
     error_reporting(E_ALL);
