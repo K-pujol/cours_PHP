@@ -11,33 +11,54 @@ include('header.php');
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toutes les tartes</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body>
-    <form action="cart.php" method="post" class="mb-4 p-3 rounded">
-        <div class="bg-dark text-white p-3">
-            <button type="submit" class="btn btn-primary">Ajouter au panier</button>
-            <?php foreach ($tartes as $key => $tarte): ?>
+    <div class="container my-4">
+        <h1 class="mb-4">Choisissez vos tartes</h1>
 
-                <h2 class="text-center">Tarte aux <?php echo $tarte['name']; ?></h2>
-                <p>Prix : <?php echo formatPrice($tarte['price']); ?></p>
-                <p>Poids : <?php echo $tarte['weight']; ?> g</p>
-                <p>Remise : <?php echo $tarte['discount']; ?> %</p>
-                <img src="<?php echo $tarte['picture_url']; ?>" alt="Image de <?php echo $tarte['name']; ?>" width="300">
-                <p>Prix HT : <?php echo formatPrice(priceExcludingVAT($tarte['price'])); ?> €</p>
-                <p>Prix après remise : <?php echo discountedPrice($tarte['price'], $tarte['discount']); ?> €</p>
-                <input type="hidden" name="action" value="add">
-                <input type="hidden" name="name" value="<?php echo $key; ?>">
-                <div class="d-flex align-items-center gap-2">
-                    <input type="number" name="quantite" value="0" min="0" class="form-control w-auto">
-                </div>
-    </form>
-<?php endforeach; ?>
+        <form method="post" action="cart.php">
+            <input type="hidden" name="action" value="bulk_add">
 
-</div>
-<?php include('footer.php'); ?>
+            <div class="row g-4">
+                <?php foreach ($tartes as $key => $tarte): ?>
+                    <div class="col-md-4">
+                        <div class="card h-100 bg-dark text-white d-flex flex-column">
+                            <img src="<?php echo htmlspecialchars($tarte['picture_url']); ?>" class="card-img-top" alt="Image de <?php echo htmlspecialchars($tarte['name']); ?>">
+
+                            <div class="card-body flex-grow-1">
+                                <h5 class="card-title">Tarte aux <?php echo htmlspecialchars($tarte['name']); ?></h5>
+                                <p>
+                                    Prix TTC : <?php echo formatPrice($tarte['price']); ?><br>
+                                    Remise : <?php echo $tarte['discount']; ?> %<br>
+                                    Poids : <?php echo $tarte['weight']; ?> g
+                                </p>
+
+                                <!-- Champs cachés avec les données -->
+                                <input type="hidden" name="cart[<?php echo $key; ?>][name]" value="<?php echo $tarte['name']; ?>">
+                                <input type="hidden" name="cart[<?php echo $key; ?>][price]" value="<?php echo $tarte['price']; ?>">
+                                <input type="hidden" name="cart[<?php echo $key; ?>][discount]" value="<?php echo $tarte['discount']; ?>">
+                                <input type="hidden" name="cart[<?php echo $key; ?>][image]" value="<?php echo $tarte['picture_url']; ?>">
+                            </div>
+                            <div class="card-footer bg-dark text-white">
+                                <label for="quantite_<?php echo $key; ?>" class="form-label mb-1">Quantité :</label>
+                                <input type="number" id="quantite_<?php echo $key; ?>" name="cart[<?php echo $key; ?>][quantite]" value="0" min="0" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+
+            <!-- BOUTON UNIQUE -->
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-success btn-lg">Ajouter au panier</button>
+            </div>
+        </form>
+    </div>
+
+    <?php include('footer.php'); ?>
 </body>
 
 </html>

@@ -1,10 +1,12 @@
 <?php
 session_start();
 
+/** Initialisation du panier */
 if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
 }
 
+/** Configuration des erreurs */
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -22,7 +24,7 @@ if (
     isset($_POST['action']) && $_POST['action'] === 'add' && isset($_POST['name'], $_POST['quantite'])
 ) {
     $key = strtolower($_POST['name']);
-
+/** Vérification de l'existence de la tarte */
     if (isset($tartes[$key])) {
         $tarteInfo = $tartes[$key];
 
@@ -40,6 +42,26 @@ if (
         }
 
         $_SESSION['cart'][$name]['quantite'] += $quantite;
+    }
+}
+
+/** Ajout d'une tarte au panier via bouton*/
+if ($_POST['action'] === 'bulk_add' && isset($_POST['cart'])) {
+    foreach ($_POST['cart'] as $key => $data) {
+        $quantite = (int) ($data['quantite'] ?? 0);
+        if ($quantite > 0) {
+            $name = $data['name'];
+            if (!isset($_SESSION['cart'][$name])) {
+                $_SESSION['cart'][$name] = [
+                    'name' => $name,
+                    'quantite' => 0,
+                    'price' => $data['price'],
+                    'discount' => $data['discount'],
+                    'image' => $data['image'],
+                ];
+            }
+            $_SESSION['cart'][$name]['quantite'] += $quantite;
+        }
     }
 }
 
@@ -101,8 +123,8 @@ if (isset($_POST['reset']) && $_POST['reset'] === 'destroy') {
                         <th>Image</th>
                         <th>Quantité</th>
                         <th>Prix unitaire</th>
-                        <th>Prix total</th>
                         <th>Remise</th>
+                        <th>Montant de la remise</th>
                         <th>Prix après remise</th>
                         <th>Supprimer</th>
                     </tr>
@@ -111,6 +133,8 @@ if (isset($_POST['reset']) && $_POST['reset'] === 'destroy') {
 
 
                 <tbody>
+                    <!-- Affichage de chaque tarte dans le panier -->
+                    <!-- On utilise le nom de la tarte comme clé pour accéder aux infos -->
                     <?php foreach ($_SESSION['cart'] as $name => $infos) :
                         $quantite = $infos['quantite'] ?? 0;
                         $prixUnitaire = $infos['price'] ?? 0;
@@ -122,6 +146,7 @@ if (isset($_POST['reset']) && $_POST['reset'] === 'destroy') {
                             <td><?php echo htmlspecialchars($name); ?></td>
                             <!-- Affichage de l'image -->
                             <td>
+                                <!-- On utilise htmlspecialchars pour éviter les injections XSS -->
                                 <img src="<?php echo htmlspecialchars($imageUrl ?? ''); ?>" alt="<?php echo htmlspecialchars($name); ?>" width="100">
                             </td>
                             <!-- +/- pour la quantité -->
@@ -144,10 +169,10 @@ if (isset($_POST['reset']) && $_POST['reset'] === 'destroy') {
                             </td>
                             <!-- Affichage du prix unitaire -->
                             <td><?php echo formatPrice($prixUnitaire); ?></td>
-                            <!-- Affichage du prix total -->
-                            <td><?php echo formatPrice($quantite * $prixUnitaire); ?></td>
-                            <!-- Affichage de la remise -->
+                            <!-- Affichage de la remise-->
                             <td><?php echo $remise . ' %'; ?></td>
+                            <!-- Montant de la remise -->
+                            <td><?php echo formatPrice($quantite * $prixUnitaire * ($remise / 100)); ?></td>
                             <!-- Affichage du prix après remise -->
                             <td><?php echo formatPrice($quantite * $prixUnitaire * (1 - $remise / 100)); ?></td>
                             <!-- Bouton de suppression -->
@@ -162,7 +187,22 @@ if (isset($_POST['reset']) && $_POST['reset'] === 'destroy') {
                     <?php endforeach; ?>
                 </tbody>
 
+                <?php
+                /** Calcul du total */
+                $total = 0;
+                foreach ($_SESSION['cart'] as $infos) {
+                    $quantite = $infos['quantite'] ?? 0;
+                    $prixUnitaire = $infos['price'] ?? 0;
+                    $remise = $infos['discount'] ?? 0;
+                    $total += $quantite * $prixUnitaire * (1 - $remise / 100);
+                }
+                ?>
+
             </table>
+
+            <div class="alert alert-success text-end fw-bold">
+                Total à payer : <?php echo formatPrice($total); ?>
+            </div>
 
             <!-- Bouton Vider tout -->
             <form method="post">
@@ -203,7 +243,9 @@ if (isset($_POST['reset']) && $_POST['reset'] === 'destroy') {
                 <button type="submit" class="btn btn-success">Ajouter au panier</button>
             </div>
         </form>
+        <!-- bouton de réinitialisation du panier -->
         <form method="post">
+            <br>
             <input type="hidden" name="reset" value="destroy">
             <button class="btn btn-danger">Reset complet du panier</button>
         </form>
