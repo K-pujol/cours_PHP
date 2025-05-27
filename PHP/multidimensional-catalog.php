@@ -1,6 +1,8 @@
 <?php
 session_start();
 
+
+
 include('my-function.php');
 include('tartes-data.php');
 include('header.php');
@@ -51,7 +53,7 @@ include('header.php');
                 <?php endforeach; ?>
             </div>
 
-            <!-- BOUTON UNIQUE -->
+            <!-- Bouton ajout -->
             <div class="text-center mt-4">
                 <button type="submit" class="btn btn-success btn-lg">Ajouter au panier</button>
             </div>

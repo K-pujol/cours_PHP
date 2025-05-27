@@ -1,6 +1,12 @@
 <?php
 session_start();
 
+try {
+    $mysqlClient = new PDO('mysql:host=localhost;dbname=mysql_tartes;charset=utf8', 'business', 'motdepasse');
+} catch (Exception $e) {
+    die('Erreur : ' . $e->getMessage());
+}
+
 /** Initialisation du panier */
 if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
@@ -24,7 +30,7 @@ if (
     isset($_POST['action']) && $_POST['action'] === 'add' && isset($_POST['name'], $_POST['quantite'])
 ) {
     $key = strtolower($_POST['name']);
-/** Vérification de l'existence de la tarte */
+    /** Vérification de l'existence de la tarte */
     if (isset($tartes[$key])) {
         $tarteInfo = $tartes[$key];
 
@@ -250,6 +256,34 @@ if (isset($_POST['reset']) && $_POST['reset'] === 'destroy') {
             <button class="btn btn-danger">Reset complet du panier</button>
         </form>
     </div>
+
+
+
+    <?php
+    $sqlQuery = 'SELECT * FROM customers';
+    $customersStatement = $mysqlClient->prepare($sqlQuery);
+    $customersStatement->execute();
+    $customers = $customersStatement->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($customers as $customer) {
+        echo '<p>' . htmlspecialchars($customer['first_name']) . ' ' . htmlspecialchars($customer['last_name']) . '</p>';
+    }
+    ?>
+
+
+    <?php
+    $sqlGateau = 'SELECT url_image FROM products';
+    $productStatement = $mysqlClient->prepare($sqlGateau);
+    $productStatement->execute();
+    $gateaux = $productStatement->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($gateaux as $gateau) {
+    ?>
+        <img src="<?php echo htmlspecialchars($gateau['url_image'] ?? ''); ?>" width="200">
+    <?php
+    }
+    ?>
+
+
 </body>
 
 </html>
