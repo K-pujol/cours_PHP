@@ -46,6 +46,7 @@ if (
         $name = $tarteInfo['name'];
         $quantite = (int) $_POST['quantite'];
 
+        /** Vérification de l'existence dans le panier */
         if (!isset($_SESSION['cart'][$name])) {
             $_SESSION['cart'][$name] = [
                 'name' => $name,
@@ -53,6 +54,11 @@ if (
                 'price' => $tarteInfo['price'],
                 'discount' => $tarteInfo['discount'],
                 'image' => $tarteInfo['picture_url'],
+                'category_id' => $tarteInfo['category_id'],
+                'vat_id' => $tarteInfo['vat_id'],
+                'description' => $tarteInfo['description'] ?? '',
+                'weight' => $tarteInfo['weight'] ?? 0,
+                'is_available' => $tarteInfo['is_available'] ?? 1,
             ];
         }
 
@@ -114,16 +120,17 @@ if (isset($_POST['reset']) && $_POST['reset'] === 'destroy') {
 }
 
 /** Envoi des données du panier */
-if (isset($_POST['action']) && $_POST['action'] === 'sendData') {
+if (isset($_POST['action']) && $_POST['action'] === 'sendDataProducts') {
+    // Vérification si le panier est vide
     if (empty($_SESSION['cart'])) {
         echo '<div class="alert alert-warning">Votre panier est vide. Ajoutez des produits avant de valider.</div>';
     } else {
         foreach ($_SESSION['cart'] as $item) {
-            // Vérification des données du produit "tarte-date"
-            $categoryId = $item['category_id'] ?? 1;
-            $vatId = $item['vat_id'] ?? 2;
+            // Vérification des données du produit "tarte-data.php"
+            $categoryId = $item['category_id'] ?? 3;
+            $vatId = $item['vat_id'] ?? 1;
             $name = $item['name'] ?? '';
-            $description = $item['description'] ?? 'ihfqjkibfq';
+            $description = $item['description'] ?? '';
             $price = $item['price'] ?? 0.0;
             $urlImage = $item['image'] ?? '';
             $weight = $item['weight'] ?? 14.2;
@@ -145,6 +152,46 @@ if (isset($_POST['action']) && $_POST['action'] === 'sendData') {
         $_SESSION['cart'] = [];
     }
 }
+
+if (isset($_POST['action']) && $_POST['action'] === 'sendDataCustomers') {
+    $result = filterForm($_POST);
+
+    if (!empty($result['errors'])) {
+        foreach ($result['errors'] as $error) {
+            echo '<div class="alert alert-danger">' . htmlspecialchars($error) . '</div>';
+        }
+    } else {
+        $data = $result['data'];
+        $firstName = $data['first_name'] ?? '';
+        $lastName = $data['last_name'] ?? '';
+        $email = $data['email'] ?? '';
+        $address = $data['address'] ?? '';
+        $postalCode = $data['postal_code'] ?? '';
+        $city = $data['city'] ?? '';
+
+        // Ajout du client à la base de données
+        addCustomers(
+            (string)$firstName,
+            (string)$lastName,
+            (string)$email,
+            (string)$address,
+            (int)$postalCode,
+            (string)$city
+        );
+
+        echo '<div class="alert alert-success">Client ajouté avec succès !</div>';
+    }
+}
+
+
+
+
+
+
+
+
+
+
 
 ?>
 
@@ -261,7 +308,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'sendData') {
 
             <!-- Bouton Valider le panier -->
             <form method="post" class="text-end mt-3">
-                <input type="hidden" name="action" value="sendData">
+                <input type="hidden" name="action" value="sendDataProducts">
                 <button class="btn btn-primary">Valider le panier</button>
             </form>
 
@@ -305,6 +352,41 @@ if (isset($_POST['action']) && $_POST['action'] === 'sendData') {
             <input type="hidden" name="reset" value="destroy">
             <button class="btn btn-danger">Reset complet du panier</button>
         </form>
+
+
+        <!-- créer un customer -->
+        <h2 class="mt-4">Créer un client</h2>
+        <form method="post">
+            <div class="mb-3">
+                <label for="first_name" class="form-label">Prénom</label>
+                <input type="text" class="form-control" id="first_name" name="first_name">
+            </div>
+            <div class="mb-3">
+                <label for="last_name" class="form-label">Nom</label>
+                <input type="text" class="form-control" id="last_name" name="last_name">
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email">
+            </div>
+            <div class="mb-3">
+                <label for="address" class="form-label">Adresse</label>
+                <input type="text" class="form-control" id="address" name="address">
+            </div>
+            <div class="mb-3">
+                <label for="postal_code" class="form-label">Code postal</label>
+                <input type="text" class="form-control" id="postal_code" name="postal_code">
+            </div>
+            <div class="mb-3">
+                <label for="city" class="form-label">Ville</label>
+                <input type="text" class="form-control" id="city" name="city">
+            </div>
+            <input type="hidden" name="action" value="sendDataCustomers">
+            <button type="submit" class="btn btn-primary">Créer le client</button>
+        </form>
+
+
+
     </div>
 
     <!-----------------------------------------Intégration SQL----------------------------------------->

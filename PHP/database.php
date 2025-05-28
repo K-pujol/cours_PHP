@@ -78,3 +78,18 @@ function addProducts(
 
     return sendDataToDatabase($sqlQuery);
 }
+
+function addCustomers(
+    string $firstName,
+    string $lastName,
+    string $email,
+    string $address,
+    int $postalCode,
+    string $city
+): array {
+    $sqlQuery = "INSERT INTO `customers` 
+    (`first_name`, `last_name`, `email`, `address`, `postal_code`, `city`) 
+    VALUES ('$firstName', '$lastName', '$email', '$address', '$postalCode', '$city');";
+
+    return sendDataToDatabase($sqlQuery);
+}
