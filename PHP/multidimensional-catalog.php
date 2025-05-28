@@ -39,10 +39,16 @@ include('header.php');
                                 </p>
 
                                 <!-- Champs cachés avec les données -->
+                                <input type="hidden" name="cart[<?php echo $key; ?>][category_id]" value="<?php echo $key; ?>">
+                                <input type="hidden" name="cart[<?php echo $key; ?>][vat_id]" value="<?php echo $tarte['vat_id']; ?>">
                                 <input type="hidden" name="cart[<?php echo $key; ?>][name]" value="<?php echo $tarte['name']; ?>">
+                                <input type="hidden" name="cart[<?php echo $key; ?>][description]" value="<?php echo htmlspecialchars($tarte['description']); ?>">
                                 <input type="hidden" name="cart[<?php echo $key; ?>][price]" value="<?php echo $tarte['price']; ?>">
-                                <input type="hidden" name="cart[<?php echo $key; ?>][discount]" value="<?php echo $tarte['discount']; ?>">
                                 <input type="hidden" name="cart[<?php echo $key; ?>][image]" value="<?php echo $tarte['picture_url']; ?>">
+                                <input type="hidden" name="cart[<?php echo $key; ?>][weight]" value="<?php echo $tarte['weight']; ?>">
+                                <input type="hidden" name="cart[<?php echo $key; ?>][quantity]" value="<?php echo $tarte['quantity']; ?>">
+                                <input type="hidden" name="cart[<?php echo $key; ?>][is_available]" value="<?php echo $tarte['is_available']; ?>">
+                                <input type="hidden" name="cart[<?php echo $key; ?>][discount]" value="<?php echo $tarte['discount']; ?>">
                             </div>
                             <div class="card-footer bg-dark text-white">
                                 <label for="quantite_<?php echo $key; ?>" class="form-label mb-1">Quantité :</label>

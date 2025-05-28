@@ -1,11 +1,6 @@
 <?php
 session_start();
 
-try {
-    $mysqlClient = new PDO('mysql:host=localhost;dbname=mysql_tartes;charset=utf8', 'business', 'motdepasse');
-} catch (Exception $e) {
-    die('Erreur : ' . $e->getMessage());
-}
 
 /** Initialisation du panier */
 if (!isset($_SESSION['cart'])) {
@@ -19,7 +14,21 @@ error_reporting(E_ALL);
 
 include('my-function.php');
 include('tartes-data.php');
+include('database.php');
 
+
+if (
+    isset($_POST['action']) && $_POST['action'] === 'add'
+    && isset($_POST['name'], $_POST['quantite'])
+) {
+    $key = strtolower($_POST['name']);
+    if (isset($tartes[$key])) {
+        $tarteInfo = $tartes[$key];
+        var_dump($tarteInfo['description'] ?? null);
+        var_dump($tarteInfo['weight'] ?? null);
+        var_dump($tarteInfo['name'] ?? null);
+    }
+}
 
 /** Suppression d'une tarte du panier */
 if (isset($_POST['action']) && $_POST['action'] === 'remove' && isset($_POST['remove'])) {
@@ -102,6 +111,39 @@ if (isset($_POST['reset']) && $_POST['reset'] === 'destroy') {
     session_destroy();    // Détruit la session
     header('Location: ' . $_SERVER['PHP_SELF']); // Recharge la page pour réinitialiser proprement
     exit;
+}
+
+/** Envoi des données du panier */
+if (isset($_POST['action']) && $_POST['action'] === 'sendData') {
+    if (empty($_SESSION['cart'])) {
+        echo '<div class="alert alert-warning">Votre panier est vide. Ajoutez des produits avant de valider.</div>';
+    } else {
+        foreach ($_SESSION['cart'] as $item) {
+            // Vérification des données du produit "tarte-date"
+            $categoryId = $item['category_id'] ?? 1;
+            $vatId = $item['vat_id'] ?? 2;
+            $name = $item['name'] ?? '';
+            $description = $item['description'] ?? 'ihfqjkibfq';
+            $price = $item['price'] ?? 0.0;
+            $urlImage = $item['image'] ?? '';
+            $weight = $item['weight'] ?? 14.2;
+            $quantity = $item['quantite'] ?? 1;
+
+            addProducts(
+                (int)$categoryId,
+                (int)$vatId,
+                (string)$name,
+                (string)$description,
+                (float)$price,
+                (string)$urlImage,
+                (float)$weight,
+                (int)$quantity
+            );
+        }
+        echo '<div class="alert alert-success">Panier validé avec succès !</div>';
+        // Réinitialiser le panier après validation
+        $_SESSION['cart'] = [];
+    }
 }
 
 ?>
@@ -206,15 +248,23 @@ if (isset($_POST['reset']) && $_POST['reset'] === 'destroy') {
 
             </table>
 
-            <div class="alert alert-success text-end fw-bold">
-                Total à payer : <?php echo formatPrice($total); ?>
+            <div class="alert alert-success text-end fw-bold d-flex justify-content-between align-items-center">
+                <!-- Bouton Vider tout -->
+                <form method="post" class="mb-0">
+                    <input type="hidden" name="action" value="clear">
+                    <button class="btn btn-warning">Vider le panier</button>
+                </form>
+                <span>Total à payer : <?php echo formatPrice($total); ?></span>
             </div>
 
-            <!-- Bouton Vider tout -->
-            <form method="post">
-                <input type="hidden" name="action" value="clear">
-                <button class="btn btn-warning">Vider le panier</button>
+
+
+            <!-- Bouton Valider le panier -->
+            <form method="post" class="text-end mt-3">
+                <input type="hidden" name="action" value="sendData">
+                <button class="btn btn-primary">Valider le panier</button>
             </form>
+
         <?php else: ?>
             <div class="alert alert-info">Votre panier est vide.</div>
         <?php endif; ?>
@@ -257,31 +307,58 @@ if (isset($_POST['reset']) && $_POST['reset'] === 'destroy') {
         </form>
     </div>
 
+    <!-----------------------------------------Intégration SQL----------------------------------------->
 
 
     <?php
-    $sqlQuery = 'SELECT * FROM customers';
-    $customersStatement = $mysqlClient->prepare($sqlQuery);
-    $customersStatement->execute();
-    $customers = $customersStatement->fetchAll(PDO::FETCH_ASSOC);
-    foreach ($customers as $customer) {
-        echo '<p>' . htmlspecialchars($customer['first_name']) . ' ' . htmlspecialchars($customer['last_name']) . '</p>';
-    }
-    ?>
 
-
-    <?php
-    $sqlGateau = 'SELECT url_image FROM products';
-    $productStatement = $mysqlClient->prepare($sqlGateau);
-    $productStatement->execute();
-    $gateaux = $productStatement->fetchAll(PDO::FETCH_ASSOC);
-
+    /* Affichage des tartes depuis la base de données */
+    $gateaux = getAllTartes();
     foreach ($gateaux as $gateau) {
     ?>
-        <img src="<?php echo htmlspecialchars($gateau['url_image'] ?? ''); ?>" width="200">
+        <p><?= htmlspecialchars($gateau['name'] ?? ''); ?></p>
+        <img src="<?= htmlspecialchars($gateau['url_image'] ?? ''); ?>" width="200">
     <?php
     }
+
+
+    /* Affichage des commandes de moins de 10 jours */
+    $lastCommande = lastTenDaysOrder();
+    foreach ($lastCommande as $commande) {
+    ?><p>Commande de moins de 10j: <br>
+            Commande - <?= htmlspecialchars($commande['number']) ?? ''; ?></p>
+    <?php
+    }
+
+    /* Affichage des produits d'une commande spécifique */
+    $orderId = 6; // Exemple d'ID de commande
+    $productFromOrder = showProductsByOrder($orderId);
+    foreach ($productFromOrder as $product) {
+    ?><p>Produit de la commande <?= $orderId ?>: <br>
+            <?= htmlspecialchars($product['name']) ?? ''; ?> - <?= formatPrice($product['price']) ?? ''; ?> - Quantité: <?= $product['quantity'] ?? ''; ?></p>
+    <?php
+    }
+    ?><br>
+    <h2>Montant total des commandes par client</h2>
+    <?php
+
+
+    /* Affichage du montant total des commandes pour un client spécifique */
+    $customerId = 6; // Exemple d'ID de client
+    $amountByCustomer = amountOrderByCustomer($customerId);
+
+    if (empty($amountByCustomer)) {
     ?>
+        <p> <?= 'Aucun client trouvé.'; ?></p>
+        <?php
+    } else {
+        foreach ($amountByCustomer as $customer) {
+        ?><p>Client: <strong><?= htmlspecialchars($customer['first_name']) ?? ''; ?> <?= htmlspecialchars($customer['last_name']) ?? ''; ?></strong> - Montant total: <?= formatPrice($customer['total_amount']) ?? ''; ?></p>
+    <?php
+        }
+    }
+    ?>
+
 
 
 </body>
