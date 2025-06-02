@@ -3,9 +3,10 @@
 
 function sendDataToDatabase(string $sqlQuery)
 {
+
     try {
         $mysqlClient = new PDO(
-            'mysql:host=localhost;dbname=mysql_tartes;charset=utf8',
+            'mysql:host=localhost;dbname=2025_05_28_sqlTartes;charset=utf8',
             'business',
             'motdepasse'
         );
@@ -20,7 +21,7 @@ function sendDataToDatabase(string $sqlQuery)
 }
 
 
-function getAllTartes(): array
+function getAllProducts(): array
 {
     $sqlQuery = 'SELECT * FROM products';
     return sendDataToDatabase($sqlQuery);

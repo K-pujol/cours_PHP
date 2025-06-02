@@ -1,19 +1,19 @@
 // --------------------------Afficher formulaire------------------------------\\
 
-const btnAjoutArticle = document.getElementById("ajout-article");
-const formContainerArticle = document.getElementById("form-containerArticle");
-const overlayArticle = document.getElementById("overlayArticle");
+const btnAjoutProducts = document.getElementById("ajout-Products");
+const formContainerProducts = document.getElementById("form-containerProducts");
+const overlayProducts = document.getElementById("overlayProducts");
 
-btnAjoutArticle.addEventListener("click", () => {
-    formContainerArticle.style.display = "block";
-    overlayArticle.style.display = "block";
+btnAjoutProducts.addEventListener("click", () => {
+    formContainerProducts.style.display = "block";
+    overlayProducts.style.display = "block";
 });
 
 // pour quitter le formulaire si on clic a côté
-overlayArticle.addEventListener("click", (e) => {
-    if (e.target === overlayArticle) {
-        formContainerArticle.style.display = "none";
-        overlayArticle.style.display = "none";
+overlayProducts.addEventListener("click", (e) => {
+    if (e.target === overlayProducts) {
+        formContainerProducts.style.display = "none";
+        overlayProducts.style.display = "none";
         document.getElementById("category_id").value = "";
         document.getElementById("vat_id").value = "";
         document.getElementById("name").value = "";

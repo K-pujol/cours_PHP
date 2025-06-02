@@ -53,7 +53,7 @@ if (
                 'quantite' => 0,
                 'price' => $tarteInfo['price'],
                 'discount' => $tarteInfo['discount'],
-                'image' => $tarteInfo['picture_url'],
+                'image' => $tarteInfo['url_image'],
                 'category_id' => $tarteInfo['category_id'],
                 'vat_id' => $tarteInfo['vat_id'],
                 'description' => $tarteInfo['description'] ?? '',
@@ -78,7 +78,12 @@ if ($_POST['action'] === 'bulk_add' && isset($_POST['cart'])) {
                     'quantite' => 0,
                     'price' => $data['price'],
                     'discount' => $data['discount'],
-                    'image' => $data['image'],
+                    'image' => $data['url_image'],
+                    'category_id' => $data['category_id'],
+                    'vat_id' => $data['vat_id'],
+                    'description' => $data['description'],
+                    'weight' => $data['weight'],
+                    'is_available' => $data['is_available'],
                 ];
             }
             $_SESSION['cart'][$name]['quantite'] += $quantite;
@@ -119,78 +124,6 @@ if (isset($_POST['reset']) && $_POST['reset'] === 'destroy') {
     exit;
 }
 
-/** Envoi des données du panier */
-if (isset($_POST['action']) && $_POST['action'] === 'sendDataProducts') {
-    // Vérification si le panier est vide
-    if (empty($_SESSION['cart'])) {
-        echo '<div class="alert alert-warning">Votre panier est vide. Ajoutez des produits avant de valider.</div>';
-    } else {
-        foreach ($_SESSION['cart'] as $item) {
-            // Vérification des données du produit "tarte-data.php"
-            $categoryId = $item['category_id'] ?? 3;
-            $vatId = $item['vat_id'] ?? 1;
-            $name = $item['name'] ?? '';
-            $description = $item['description'] ?? '';
-            $price = $item['price'] ?? 0.0;
-            $urlImage = $item['image'] ?? '';
-            $weight = $item['weight'] ?? 14.2;
-            $quantity = $item['quantite'] ?? 1;
-
-            addProducts(
-                (int)$categoryId,
-                (int)$vatId,
-                (string)$name,
-                (string)$description,
-                (float)$price,
-                (string)$urlImage,
-                (float)$weight,
-                (int)$quantity
-            );
-        }
-        echo '<div class="alert alert-success">Panier validé avec succès !</div>';
-        // Réinitialiser le panier après validation
-        $_SESSION['cart'] = [];
-    }
-}
-
-if (isset($_POST['action']) && $_POST['action'] === 'sendDataCustomers') {
-    $result = filterForm($_POST);
-
-    if (!empty($result['errors'])) {
-        foreach ($result['errors'] as $error) {
-            echo '<div class="alert alert-danger">' . htmlspecialchars($error) . '</div>';
-        }
-    } else {
-        $data = $result['data'];
-        $firstName = $data['first_name'] ?? '';
-        $lastName = $data['last_name'] ?? '';
-        $email = $data['email'] ?? '';
-        $address = $data['address'] ?? '';
-        $postalCode = $data['postal_code'] ?? '';
-        $city = $data['city'] ?? '';
-
-        // Ajout du client à la base de données
-        addCustomers(
-            (string)$firstName,
-            (string)$lastName,
-            (string)$email,
-            (string)$address,
-            (int)$postalCode,
-            (string)$city
-        );
-
-        echo '<div class="alert alert-success">Client ajouté avec succès !</div>';
-    }
-}
-
-
-
-
-
-
-
-
-
 
 
 ?>
@@ -229,7 +162,6 @@ if (isset($_POST['action']) && $_POST['action'] === 'sendDataCustomers') {
 
                 <tbody>
                     <!-- Affichage de chaque tarte dans le panier -->
-                    <!-- On utilise le nom de la tarte comme clé pour accéder aux infos -->
                     <?php foreach ($_SESSION['cart'] as $name => $infos) :
                         $quantite = $infos['quantite'] ?? 0;
                         $prixUnitaire = $infos['price'] ?? 0;
@@ -237,12 +169,13 @@ if (isset($_POST['action']) && $_POST['action'] === 'sendDataCustomers') {
                         $imageUrl = $infos['image'] ?? '';
                     ?>
                         <tr>
-                            <!-- Affichage du nom -->
-                            <td><?php echo htmlspecialchars($name); ?></td>
+                            <td>
+                                <!-- Affichage du nom -->
+                                <p><?= htmlspecialchars($infos['name'] ?? ''); ?></p>
+                            </td>
                             <!-- Affichage de l'image -->
                             <td>
-                                <!-- On utilise htmlspecialchars pour éviter les injections XSS -->
-                                <img src="<?php echo htmlspecialchars($imageUrl ?? ''); ?>" alt="<?php echo htmlspecialchars($name); ?>" width="100">
+                                <img src="<?= htmlspecialchars($imageUrl); ?>" width="200" class="card-img-top" alt="Image de <?php echo htmlspecialchars($infos['name']); ?>">
                             </td>
                             <!-- +/- pour la quantité -->
                             <td>
@@ -263,7 +196,10 @@ if (isset($_POST['action']) && $_POST['action'] === 'sendDataCustomers') {
                                 </div>
                             </td>
                             <!-- Affichage du prix unitaire -->
-                            <td><?php echo formatPrice($prixUnitaire); ?></td>
+                            <td>
+                                <p><?= formatPrice($prixUnitaire); ?></p>
+                            </td>
+                            <?php $remise = 10; ?>
                             <!-- Affichage de la remise-->
                             <td><?php echo $remise . ' %'; ?></td>
                             <!-- Montant de la remise -->
@@ -288,7 +224,8 @@ if (isset($_POST['action']) && $_POST['action'] === 'sendDataCustomers') {
                 foreach ($_SESSION['cart'] as $infos) {
                     $quantite = $infos['quantite'] ?? 0;
                     $prixUnitaire = $infos['price'] ?? 0;
-                    $remise = $infos['discount'] ?? 0;
+                    $remise = 10;
+                    //$infos['discount'] ?? 0;
                     $total += $quantite * $prixUnitaire * (1 - $remise / 100);
                 }
                 ?>
@@ -318,74 +255,12 @@ if (isset($_POST['action']) && $_POST['action'] === 'sendDataCustomers') {
 
         <hr>
 
-        <!-- Ajout manuel -->
-        <h2 class="mt-4">Ajouter une tarte</h2>
-        <form method="post" class="row g-3">
-            <input type="hidden" name="action" value="add">
-            <div class="col-md-4">
-                <select name="name" class="form-select" required>
-                    <option type="hidden" value="">-- Choisir une tarte --</option>
-                    <option value="fraises">Tarte aux Fraises</option>
-                    <option value="pommes">Tarte aux Pommes</option>
-                    <option value="poires">Tarte aux Poires</option>
-                    <option value="cerises">Tarte aux Cerises</option>
-                    <option value="abricots">Tarte aux Abricots</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <input type="number" name="quantite" class="form-control" value="1" min="1" required>
-            </div>
-
-
-            <!-- Ajout d'un champ caché pour chaque tarte dans le panier -->
-            <?php foreach ($_SESSION['cart'] as $key => $data):
-                include('constructionPanier.php');
-            endforeach; ?>
-
-            <div class="col-md-2">
-                <button type="submit" class="btn btn-success">Ajouter au panier</button>
-            </div>
-        </form>
         <!-- bouton de réinitialisation du panier -->
         <form method="post">
             <br>
             <input type="hidden" name="reset" value="destroy">
             <button class="btn btn-danger">Reset complet du panier</button>
         </form>
-
-
-        <!-- créer un customer -->
-        <h2 class="mt-4">Créer un client</h2>
-        <form method="post">
-            <div class="mb-3">
-                <label for="first_name" class="form-label">Prénom</label>
-                <input type="text" class="form-control" id="first_name" name="first_name">
-            </div>
-            <div class="mb-3">
-                <label for="last_name" class="form-label">Nom</label>
-                <input type="text" class="form-control" id="last_name" name="last_name">
-            </div>
-            <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
-                <input type="email" class="form-control" id="email" name="email">
-            </div>
-            <div class="mb-3">
-                <label for="address" class="form-label">Adresse</label>
-                <input type="text" class="form-control" id="address" name="address">
-            </div>
-            <div class="mb-3">
-                <label for="postal_code" class="form-label">Code postal</label>
-                <input type="text" class="form-control" id="postal_code" name="postal_code">
-            </div>
-            <div class="mb-3">
-                <label for="city" class="form-label">Ville</label>
-                <input type="text" class="form-control" id="city" name="city">
-            </div>
-            <input type="hidden" name="action" value="sendDataCustomers">
-            <button type="submit" class="btn btn-primary">Créer le client</button>
-        </form>
-
-
 
     </div>
 
@@ -395,11 +270,11 @@ if (isset($_POST['action']) && $_POST['action'] === 'sendDataCustomers') {
     <?php
 
     /* Affichage des tartes depuis la base de données */
-    $gateaux = getAllTartes();
+    $gateaux = getAllProducts();
     foreach ($gateaux as $gateau) {
     ?>
-        <p><?= htmlspecialchars($gateau['name'] ?? ''); ?></p>
         <img src="<?= htmlspecialchars($gateau['url_image'] ?? ''); ?>" width="200">
+        <input type="hidden" name="cart[<?php echo $gateau['id']; ?>][url_image]" value="<?php echo $gateau['url_image']; ?>">
     <?php
     }
 

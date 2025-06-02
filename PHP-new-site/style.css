@@ -1,6 +1,6 @@
 /* ----------------------------Formulaire--------------------------------- */
 
-#overlayArticle,
+#overlayProducts,
 #overlayCustomer {
     position: absolute;
     top: 0;
@@ -14,7 +14,7 @@
 }
 
 /* From Uiverse.io by omriluz */
-#form-containerArticle,
+#form-containerProducts,
 #form-containerCustomer {
     position: fixed;
     top: 50%;
@@ -55,26 +55,26 @@
     }
 }
 
-#form-containerArticle button:active,
+#form-containerProducts button:active,
 #form-containerCustomer button:active {
     scale: 0.95;
 }
 
-#form-containerArticle .form,
+#form-containerProducts .form,
 #form-containerCustomer .form {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-#form-containerArticle .form-group,
+#form-containerProducts .form-group,
 #form-containerCustomer .form-group {
     display: flex;
     flex-direction: column;
     gap: 2px;
 }
 
-#form-containerArticle .form-group label,
+#form-containerProducts .form-group label,
 #form-containerCustomer .form-group label {
     display: block;
     margin-bottom: 5px;
@@ -83,7 +83,7 @@
     font-size: 11px;
 }
 
-#form-containerArticle .form-group input,
+#form-containerProducts .form-group input,
 #form-containerCustomer .form-group input {
     width: 90%;
     padding: 8px 14px;
@@ -94,7 +94,7 @@
     border: 1px solid #414141;
 }
 
-#form-containerArticle .form-group textarea,
+#form-containerProducts .form-group textarea,
 #form-containerCustomer .form-group textarea {
     width: 90%;
     /* tailles des box */
@@ -108,24 +108,24 @@
     font-family: inherit;
 }
 
-#form-containerArticle .form-group input::placeholder,
+#form-containerProducts .form-group input::placeholder,
 #form-containerCustomer .form-group input::placeholder {
     opacity: 0.5;
 }
 
-#form-containerArticle .form-group input:focus,
+#form-containerProducts .form-group input:focus,
 #form-containerCustomer .form-group input:focus {
     outline: none;
     border-color: #0f4c54;
 }
 
-#form-containerArticle .form-group textarea:focus,
+#form-containerProducts .form-group textarea:focus,
 #form-containerCustomer .form-group textarea:focus {
     outline: none;
     border-color: #0f4c54;
 }
 
-#form-containerArticle .form-submit-btn,
+#form-containerProducts .form-submit-btn,
 #form-containerCustomer .form-submit-btn {
     display: flex;
     align-items: flex-start;
@@ -145,14 +145,14 @@
     border-radius: 6px;
 }
 
-#form-containerArticle .form-submit-btn:hover,
+#form-containerProducts .form-submit-btn:hover,
 #form-containerCustomer .form-submit-btn:hover {
     background-color: rgba(11, 94, 97, 0.8);
     border-color: #fff;
     color: #fff;
 }
 
-#form-containerArticle .form-group input[type="checkbox"],
+#form-containerProducts .form-group input[type="checkbox"],
 #form-containerCustomer .form-group input[type="checkbox"] {
     align-self: flex-start;
     margin-left: 0;
