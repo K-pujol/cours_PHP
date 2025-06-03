@@ -28,14 +28,10 @@ function sendDataToDatabase(string $sqlQuery, array $params = [])
     }
 }
 
-
-
-
 function getAllProducts(): array
 {
     return sendDataToDatabase('SELECT * FROM products');
 }
-
 
 
 function lastTenDaysOrder(): array
@@ -43,33 +39,29 @@ function lastTenDaysOrder(): array
     return sendDataToDatabase('SELECT * FROM orders WHERE create_at >= NOW() - INTERVAL 10 DAY');
 }
 
-
 function showProductsByOrder(int $order): array
 {
-    $sqlQuery = "SELECT name, order_product.quantity, price 
+    $sqlQuery = "SELECT name, order_items.quantity, price 
         FROM products 
-        JOIN order_product 
-        ON products.id = order_product.product_id 
-        AND order_product.order_id = :orderId";
+        JOIN order_items 
+        ON products.id = order_items.product_id
+        AND order_items.order_id = :orderId";
 
     return sendDataToDatabase($sqlQuery, [':orderId' => $order]);
 }
 
-
 function amountOrderByCustomer(int $customerId): array
 {
-    $sqlQuery = "SELECT customers.first_name, customers.last_name, SUM(order_product.quantity * products.price) AS total_amount
+    $sqlQuery = "SELECT customers.first_name, customers.last_name, SUM(order_items.quantity * products.price) AS total_amount
         FROM customers
         LEFT JOIN orders ON orders.customer_id = customers.id
-        LEFT JOIN order_product ON order_product.order_id = orders.id
-        LEFT JOIN products ON products.id = order_product.product_id
+        LEFT JOIN order_items ON order_items.order_id = orders.id
+        LEFT JOIN products ON products.id = order_items.product_id
         WHERE customers.id = :customerId
         GROUP BY customers.first_name, customers.last_name";
 
     return sendDataToDatabase($sqlQuery, [':customerId' => $customerId]);
 }
-
-
 
 function addProducts(
     int $categoryId,
@@ -123,7 +115,6 @@ function addCustomers(
     ]);
 }
 
-
 function createOrders(
     int $customerId = 1,
     string $discountCode = '',
@@ -143,8 +134,6 @@ function createOrders(
 
     return sendDataToDatabase($sqlQuery, $params);
 }
-
-
 
 function createOrderItems(
     int $orderId,
