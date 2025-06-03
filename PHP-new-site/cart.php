@@ -67,7 +67,7 @@ if (
 }
 
 /** Ajout d'une tarte au panier via bouton*/
-if ($_POST['action'] === 'bulk_add' && isset($_POST['cart'])) {
+if ($_POST['action'] === 'products_add' && isset($_POST['cart'])) {
     foreach ($_POST['cart'] as $key => $data) {
         $quantite = (int) ($data['quantite'] ?? 0);
         if ($quantite > 0) {
@@ -76,6 +76,7 @@ if ($_POST['action'] === 'bulk_add' && isset($_POST['cart'])) {
                 $_SESSION['cart'][$name] = [
                     'name' => $name,
                     'quantite' => 0,
+                    'id' => $data['id'],
                     'price' => $data['price'],
                     'discount' => $data['discount'],
                     'image' => $data['url_image'],
@@ -125,7 +126,38 @@ if (isset($_POST['reset']) && $_POST['reset'] === 'destroy') {
 }
 
 
+/** Création commande dans BDD */
 
+if (isset($_POST['action']) && $_POST['action'] === 'sendDataProducts') {
+    // Vérification que le panier n'est pas vide
+    if (empty($_SESSION['cart'])) {
+        echo '<div class="alert alert-danger">Votre panier est vide. Veuillez ajouter des produits avant de valider.</div>';
+        exit;
+    }
+    // Récupération des données du panier
+    $cartData = $_SESSION['cart'];
+    // Création de la commande
+
+    // Calcul du prix total de la commande avant l'envoi
+    $prixTotal = 0;
+    foreach ($cartData as $item) {
+        $quantite = $item['quantite'] ?? 0;
+        $prixUnitaire = $item['price'] ?? 0;
+        $remise = (float)($item['discount'] ?? 0);
+        $prixTotal += $quantite * $prixUnitaire * (1 - $remise / 100);
+    }
+
+    $orderId = createOrders(1, '', 1, $prixTotal);
+
+    // Création des éléments dans la commande
+    foreach ($cartData as $item) {
+        createOrderItems($orderId, $item['id'], $item['quantite'], $item['price']);
+    }
+
+    // Vider le panier
+    $_SESSION['cart'] = [];
+    echo '<div class="alert alert-success">Commande créée avec succès !</div>';
+}
 ?>
 
 <!DOCTYPE html>
@@ -138,8 +170,6 @@ if (isset($_POST['reset']) && $_POST['reset'] === 'destroy') {
 </head>
 
 <body>
-
-
     <div class="container py-5">
         <h1 class="mb-4">🛒 Mon Panier</h1>
 
@@ -147,7 +177,7 @@ if (isset($_POST['reset']) && $_POST['reset'] === 'destroy') {
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr>
-                        <th>Tarte</th>
+                        <th>Produits</th>
                         <th>Image</th>
                         <th>Quantité</th>
                         <th>Prix unitaire</th>
@@ -158,15 +188,14 @@ if (isset($_POST['reset']) && $_POST['reset'] === 'destroy') {
                     </tr>
                 </thead>
 
-
-
                 <tbody>
                     <!-- Affichage de chaque tarte dans le panier -->
                     <?php foreach ($_SESSION['cart'] as $name => $infos) :
                         $quantite = $infos['quantite'] ?? 0;
                         $prixUnitaire = $infos['price'] ?? 0;
                         $remise = $infos['discount'] ?? 0;
-                        $imageUrl = $infos['image'] ?? '';
+                        $image = $infos['image'];
+
                     ?>
                         <tr>
                             <td>
@@ -175,7 +204,7 @@ if (isset($_POST['reset']) && $_POST['reset'] === 'destroy') {
                             </td>
                             <!-- Affichage de l'image -->
                             <td>
-                                <img src="<?= htmlspecialchars($imageUrl); ?>" width="200" class="card-img-top" alt="Image de <?php echo htmlspecialchars($infos['name']); ?>">
+                                <img src="<?= htmlspecialchars($image); ?>" width="200" alt="Image de <?php echo htmlspecialchars($infos['name']); ?>">
                             </td>
                             <!-- +/- pour la quantité -->
                             <td>
@@ -203,9 +232,11 @@ if (isset($_POST['reset']) && $_POST['reset'] === 'destroy') {
                             <!-- Affichage de la remise-->
                             <td><?php echo $remise . ' %'; ?></td>
                             <!-- Montant de la remise -->
-                            <td><?php echo formatPrice($quantite * $prixUnitaire * ($remise / 100)); ?></td>
+                            <?php $prixRemise = $quantite * $prixUnitaire * ($remise / 100); ?>
+                            <td><?php echo formatPrice($prixRemise); ?></td>
                             <!-- Affichage du prix après remise -->
-                            <td><?php echo formatPrice($quantite * $prixUnitaire * (1 - $remise / 100)); ?></td>
+                            <?php $prixTotal = $quantite * $prixUnitaire * (1 - $remise / 100); ?>
+                            <td><?php echo formatPrice($prixTotal); ?></td>
                             <!-- Bouton de suppression -->
                             <td>
                                 <form method="post" class="d-inline">
@@ -242,7 +273,6 @@ if (isset($_POST['reset']) && $_POST['reset'] === 'destroy') {
             </div>
 
 
-
             <!-- Bouton Valider le panier -->
             <form method="post" class="text-end mt-3">
                 <input type="hidden" name="action" value="sendDataProducts">
@@ -263,61 +293,6 @@ if (isset($_POST['reset']) && $_POST['reset'] === 'destroy') {
         </form>
 
     </div>
-
-    <!-----------------------------------------Intégration SQL----------------------------------------->
-
-
-    <?php
-
-    /* Affichage des tartes depuis la base de données */
-    $gateaux = getAllProducts();
-    foreach ($gateaux as $gateau) {
-    ?>
-        <img src="<?= htmlspecialchars($gateau['url_image'] ?? ''); ?>" width="200">
-        <input type="hidden" name="cart[<?php echo $gateau['id']; ?>][url_image]" value="<?php echo $gateau['url_image']; ?>">
-    <?php
-    }
-
-
-    /* Affichage des commandes de moins de 10 jours */
-    $lastCommande = lastTenDaysOrder();
-    foreach ($lastCommande as $commande) {
-    ?><p>Commande de moins de 10j: <br>
-            Commande - <?= htmlspecialchars($commande['number']) ?? ''; ?></p>
-    <?php
-    }
-
-    /* Affichage des produits d'une commande spécifique */
-    $orderId = 6; // Exemple d'ID de commande
-    $productFromOrder = showProductsByOrder($orderId);
-    foreach ($productFromOrder as $product) {
-    ?><p>Produit de la commande <?= $orderId ?>: <br>
-            <?= htmlspecialchars($product['name']) ?? ''; ?> - <?= formatPrice($product['price']) ?? ''; ?> - Quantité: <?= $product['quantity'] ?? ''; ?></p>
-    <?php
-    }
-    ?><br>
-    <h2>Montant total des commandes par client</h2>
-    <?php
-
-
-    /* Affichage du montant total des commandes pour un client spécifique */
-    $customerId = 6; // Exemple d'ID de client
-    $amountByCustomer = amountOrderByCustomer($customerId);
-
-    if (empty($amountByCustomer)) {
-    ?>
-        <p> <?= 'Aucun client trouvé.'; ?></p>
-        <?php
-    } else {
-        foreach ($amountByCustomer as $customer) {
-        ?><p>Client: <strong><?= htmlspecialchars($customer['first_name']) ?? ''; ?> <?= htmlspecialchars($customer['last_name']) ?? ''; ?></strong> - Montant total: <?= formatPrice($customer['total_amount']) ?? ''; ?></p>
-    <?php
-        }
-    }
-    ?>
-
-
-
 </body>
 
 </html>

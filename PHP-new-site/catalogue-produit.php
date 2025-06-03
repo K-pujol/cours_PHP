@@ -1,12 +1,8 @@
 <?php
 session_start();
-
-
-
 include('my-function.php');
 include('header.php');
 include('database.php');
-
 ?>
 
 <!DOCTYPE html>
@@ -21,12 +17,8 @@ include('database.php');
 <body>
     <div class="container my-4">
         <h1 class="mb-4">Choisissez vos produits</h1>
-
         <form method="post" action="cart.php">
-            <input type="hidden" name="action" value="bulk_add">
-
-
-
+            <input type="hidden" name="action" value="products_add">
             <div class="row g-4">
                 <?php $gateaux = getAllProducts();
                 foreach ($gateaux as $gateau) { ?>
@@ -48,15 +40,16 @@ include('database.php');
                                 <input type="hidden" name="cart[<?php echo $gateau['id']; ?>][name]" value="<?php echo $gateau['name']; ?>">
                                 <input type="hidden" name="cart[<?php echo $gateau['id']; ?>][description]" value="<?php echo htmlspecialchars($gateau['description']); ?>">
                                 <input type="hidden" name="cart[<?php echo $gateau['id']; ?>][price]" value="<?php echo $gateau['price']; ?>">
-                                <input type="hidden" name="cart[<?php echo $gateau['id']; ?>][url_image ]" value="<?php echo $gateau['url_image']; ?>">
+                                <input type="hidden" name="cart[<?php echo $gateau['id']; ?>][url_image]" value="<?php echo $gateau['url_image']; ?>">
                                 <input type="hidden" name="cart[<?php echo $gateau['id']; ?>][weight]" value="<?php echo $gateau['weight']; ?>">
                                 <input type="hidden" name="cart[<?php echo $gateau['id']; ?>][quantity]" value="<?php echo $gateau['quantity']; ?>">
                                 <input type="hidden" name="cart[<?php echo $gateau['id']; ?>][is_available]" value="<?php echo $gateau['is_available']; ?>">
                                 <input type="hidden" name="cart[<?php echo $gateau['id']; ?>][discount]" value="<?php echo $gateau['discount']; ?>">
+                                <input type="hidden" name="cart[<?php echo $gateau['id']; ?>][id]" value="<?php echo $gateau['id']; ?>">
                             </div>
                             <div class="card-footer bg-dark text-white">
-                                <label for="quantite_<?php echo $key; ?>" class="form-label mb-1">Quantité :</label>
-                                <input type="number" id="quantite_<?php echo $key; ?>" name="cart[<?php echo $key; ?>][quantite]" value="0" min="0" class="form-control">
+                                <label for="quantite_<?php echo $gateau['id']; ?>" class="form-label mb-1">Quantité :</label>
+                                <input type="number" id="quantite_<?php echo $gateau['id']; ?>" name="cart[<?php echo $gateau['id']; ?>][quantite]" value="0" min="0" class="form-control">
                             </div>
                         </div>
                     </div>
